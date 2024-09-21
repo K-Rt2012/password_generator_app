@@ -1,0 +1,25 @@
+version: '3'
+services:
+  db:
+    image: postgres # PostgreSQLの公式イメージを使用
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ./tmp/db:/var/lib/postgresql/data # データ永続化のためのボリュームマウント
+    ports:
+      - "5432:5432" # ローカルとコンテナのPostgreSQLポートをマッピング
+
+  web:
+    build: .
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -b '0.0.0.0'"
+    volumes:
+      - .:/app # ローカルディレクトリをコンテナにマウント
+    ports:
+      - "3000:3000" # ローカルとコンテナのRailsサーバーポートをマッピング
+    depends_on:
+      - db # DBサーバーが先に起動することを保証
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_HOST: db
